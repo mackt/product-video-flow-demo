@@ -951,7 +951,7 @@
     : { fg:'#1f1f1f', auto:'#eef3fb', autoB:'#7a9cd6', ops:'#fff4e0', opsB:'#e0a030', reach:'#eaf6ee', reachB:'#5aa877', stop:'#f3f1ee', stopB:'#b9b4ac', pend:'#d9534f' }
   const graph = `flowchart TD
   start(["每天 0 点 / 10 点<br/>Cola 自动运行一次"]):::auto
-  gate{"这个账号还需要做吗？<br/>（总开关开着、没成功过、<br/>不在审核中、用户没关闭）"}:::auto
+  gate{"这个账号还需要做吗？<br/>（总开关开着、没成功过、<br/>不在审核中、<br/>用户没有主动要求不生成视频）"}:::auto
   ctrl{"实验分组"}:::auto
   ctrlEnd["对照组 20%<br/>只记录「本来会收到视频」<br/>不做视频"]:::stop
   scan["扫描昨天的对话<br/>找用 Cola 做的网页作品<br/>（第一次回看 14 天）"]:::auto
