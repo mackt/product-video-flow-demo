@@ -157,7 +157,7 @@
   .vbtn { font-size: 12.5px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
   .vbtn:hover { border-color: var(--app-muted); }
 
-  /* 心迹 */
+  /* 发现 */
   .feed { flex: 1; overflow-y: auto; padding: 18px 24px; }
   .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
   .filter { font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
@@ -294,7 +294,7 @@
         <span class="gstep" data-g="1">② 在审核后台通过</span>
         <span class="gstep" data-g="2">③ 用户收到 Cola 的消息</span>
         <span class="gstep" data-g="3">④ 让 Cola 接着改</span>
-        <span class="gstep" data-g="4">⑤ 去心迹看卡片</span>
+        <span class="gstep" data-g="4">⑤ 去发现看卡片</span>
       </div>
       <div class="hint" id="hint">先点右边的 <b>模拟今晚的每日扫描</b>。扫描、判断、制作都在用户电脑上自动完成，用户这时什么都看不到。</div>
     </div>
@@ -320,9 +320,10 @@
       <div class="app" id="app">
         <aside class="side">
           <button class="nav sel" data-p="chat"><span class="ava">C</span>Cola<span class="badge" id="b-chat"></span></button>
-          <button class="nav" data-p="soul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>心迹<span class="badge" id="b-soul"></span></button>
+          <button class="nav" data-p="soul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>发现<span class="badge" id="b-soul"></span></button>
           <button class="nav" data-p="laicai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>来财</button>
           <button class="nav" data-p="creative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M7 21h14V9"/><circle cx="8" cy="9.5" r="1.3"/><path d="m3 15 4-3.5 3 2.5 3-2 4 3"/></svg>创作</button>
+          <button class="nav" data-p="skills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>技能</button>
           <button class="nav" data-p="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>项目</button>
           <div class="sep"></div>
           <div class="sect">聊天列表</div>
@@ -359,14 +360,15 @@
           </div>
         </section>
 
-        <!-- 心迹 -->
+        <!-- 发现 -->
         <section class="page" id="p-soul">
-          <div class="phead">心迹 <small id="soul-unread"></small></div>
+          <div class="phead">发现 <small id="soul-unread"></small></div>
           <div class="feed">
             <div class="filters" id="filters">
               <button class="filter sel" data-f="all">全部内容</button>
-              <button class="filter" data-f="rec">小 Co 的推荐</button>
-              <button class="filter" data-f="imp">小 Co 的悄悄话</button>
+              <button class="filter" data-f="rec">洞见</button>
+              <button class="filter" data-f="news">资讯</button>
+              <button class="filter" data-f="imp">心迹</button>
               <button class="filter" data-f="like">我的收藏</button>
             </div>
             <div class="fdesc" id="fdesc">小 Co 的推荐和悄悄话，都在这里。</div>
@@ -400,7 +402,8 @@
         </section>
 
         <section class="page" id="p-laicai"><div class="phead">来财</div><div class="placeholder">（与本功能无关）</div></section>
-        <section class="page" id="p-creative"><div class="phead">创作</div><div class="placeholder">创作页的素材库一期不放这些视频。<br>自动做的视频只出现在主聊天和心迹里。</div></section>
+        <section class="page" id="p-creative"><div class="phead">创作</div><div class="placeholder">创作页的素材库一期不放这些视频。<br>自动做的视频只出现在主聊天和发现里。</div></section>
+        <section class="page" id="p-skills"><div class="phead">技能</div><div class="placeholder">（与本功能无关）</div></section>
         <section class="page" id="p-library"><div class="phead">资料库</div><div class="placeholder">（与本功能无关）</div></section>
         <section class="page" id="p-menu"><div class="phead">菜单</div><div class="placeholder">一期不在设置里加开关。<br>用户在聊天里说「别再给我做视频了」，Cola 会帮用户关掉。</div></section>
       </div>
@@ -471,7 +474,7 @@
       <tr><td>实验</td><td>按账号分组：80% 收视频，20% 不收作对照。比例可在服务端调整。</td></tr>
       <tr><td>费用</td><td>自动做视频不扣用户积分。用户之后在聊天里让 Cola 改视频，按正常规则计费。</td></tr>
       <tr><td>隐私</td><td>页面里有真实客户 / 个人数据的作品直接跳过；审核页用户匿名；后台视频审核结束 30 天后自动删除。</td></tr>
-      <tr><td>触达</td><td>只在 App 内：主对话消息 + 心迹卡片。和推荐一样不弹系统通知，不发邮件、不发短信。</td></tr>
+      <tr><td>触达</td><td>只在 App 内：主对话消息 + 发现卡片。和推荐一样不弹系统通知，不发邮件、不发短信。</td></tr>
       <tr><td>关闭</td><td>用户在聊天里说不想要，Cola 会帮用户关掉。服务端有总开关，随时可以整体下线，已推送的视频保留。</td></tr>
       <tr><td>范围</td><td>国际版和中国版都上，只覆盖桌面端。</td></tr>
     </table>
@@ -556,7 +559,7 @@
     '视频已上传。点 <b>打开审核后台</b>，在列表里点「破浪手账」那一行，看完视频后点 <b>通过</b>（也可以试试驳回）。播放器右下角有下载和全屏。',
     '回到上面的 Cola 窗口：用户空闲时，Cola 会在主聊天里主动发消息附上视频。可以先切到别的页面，看看左侧的红点。',
     '在输入框里随便说点什么，比如 <b>把配色改成深蓝</b>、<b>能再短一点吗</b>、<b>这个视频是怎么来的</b>、<b>你们上传我的作品了吗</b>、<b>给练习台也做一个</b>、<b>别再给我做视频了</b>。',
-    '点左侧 <b>心迹</b>，视频卡片带红点；点「和 Cola 聊聊」会带着引用回到主聊天。'
+    '点左侧 <b>发现</b>，视频卡片带红点；点「和 Cola 聊聊」会带着引用回到主聊天。'
   ]
   function guide(n) {
     document.querySelectorAll('.gstep').forEach((g) => { const i = +g.dataset.g; g.classList.toggle('on', i < n); g.classList.toggle('now', i === n) })
@@ -640,7 +643,7 @@
       return colaSay('做好之后、发给你之前，视频传到了 Cola 团队那边做过一次质量检查，看的是这段视频和作品截图，不会关联你的身份，30 天后会删除。如果你不希望这样，我可以把这个功能关掉。')
     }
     if (has(/怎么来|哪来|怎么做的|为什么.*视频|谁做的/)) {
-      return colaSay('是我帮你做的。看你一直在打磨破浪手账，就顺手剪了一段介绍片。想改哪里直接告诉我。')
+      return colaSay('是我帮你做的，破浪手账调完挺完整了，就给它剪了一段。想改哪里直接告诉我。')
     }
     if (has(/练习台|别的作品|另一个|其他作品|也做/)) {
       addSys('这一轮由用户发起，按正常规则计费')
@@ -721,7 +724,7 @@
     const r = ROWS.find((x) => x.id === current); if (!r || r.status !== 'wait') return
     r.status = 'ok'; openRow(r.id)
     if (r.other) { $('dres').textContent = '已通过。（这位用户不是上面 Cola 窗口里的人，原型里只更新状态。）'; return }
-    $('dres').textContent = '已通过。用户空闲时，Cola 会在主聊天里发出视频，心迹同步出现卡片。这个账号以后不再生成。'
+    $('dres').textContent = '已通过。用户空闲时，Cola 会在主聊天里发出视频，发现同步出现卡片。这个账号以后不再生成。'
     S.approved = true; S.scanned = false; setState(); guide(2)
     setTimeout(deliver, 1200); tourEmit('approved')
   })
@@ -738,7 +741,7 @@
 
   // ================= 推送 =================
   function deliver() {
-    const msg = '你一直在打磨的「破浪手账」我挺喜欢的，顺手给它剪了一段 10 秒的介绍片，你看看？<br>想换个风格、改改文案，直接跟我说就行。'
+    const msg = '第三关调完之后破浪手账挺完整了，我给它剪了段 10 秒的介绍片，拿去给朋友看应该挺合适。'
     if (S.page === 'chat') {
       colaSay(msg, 'ocean', 1400).then(() => { guide(3); showDefaultSugs(); tourEmit('delivered') })
     } else {
@@ -748,7 +751,7 @@
       $('b-chat').classList.add('show')
       guide(3); showDefaultSugs(); tourEmit('delivered')
     }
-    // 心迹卡片
+    // 发现卡片
     const card = document.createElement('div'); card.className = 'fcard enter'; card.dataset.k = 'rec'
     card.innerHTML = `<span class="unread"></span><div class="tagline">#小 Co 为你挑的</div><h5>「破浪手账」的介绍视频</h5><p>Cola 为你的作品做的一段 10 秒介绍片，可以直接下载分享。</p>${playerBlock('ocean')}<div class="row"><span>视频 · 刚刚</span><button class="chatbtn" data-quote="「破浪手账」的介绍视频">和 Cola 聊聊</button></div>`
     $('fgrid').prepend(card); mountAll(card)
@@ -769,8 +772,8 @@
   }
   bindChatBtns(document)
 
-  // 心迹筛选
-  const FDESC = { all: '小 Co 的推荐和悄悄话，都在这里。', rec: '小 Co 为你挑选的文章、视频和其他内容。', imp: '聊过之后，小 Co 想对你说的话。', like: '收藏的内容，方便回来再看。' }
+  // 发现筛选
+  const FDESC = { all: '小 Co 的推荐和悄悄话，都在这里。', rec: '小 Co 为你挑选的文章、视频和其他内容。', news: '小 Co 为你挑选的、值得关注的新鲜资讯。', imp: '聊过之后，小 Co 想对你说的话。', like: '收藏的内容，方便回来再看。' }
   document.querySelectorAll('.filter').forEach((f) => f.addEventListener('click', () => {
     document.querySelectorAll('.filter').forEach((x) => x.classList.toggle('sel', x === f))
     $('fdesc').textContent = FDESC[f.dataset.f]
@@ -814,10 +817,10 @@
       title: '用户可以接着跟 Cola 聊',
       body: '点上面任意一个建议，或者自己输入（这排建议<b>只在原型里有</b>，应用里不做）。比如问「你们上传我的作品了吗」，Cola 会如实说明经过了审核。' },
     { role: 'user', target: () => q('.nav[data-p="soul"]'), wait: 'soulOpened',
-      title: '视频也会放进「心迹」',
-      body: '心迹右边有红点。<b>点左侧的「心迹」</b>。' },
+      title: '视频也会放进「发现」',
+      body: '发现右边有红点。<b>点左侧的「发现」</b>。' },
     { role: 'user', target: () => q('#fgrid .fcard'), next: '下一步',
-      title: '心迹里的视频卡片',
+      title: '发现里的视频卡片',
       body: '可以播放、下载。点「和 Cola 聊聊」会带着这张卡片回到主聊天。' },
     { center: true, next: '自己随便点点', alt: ['往下看流程图', () => $('flowchart').scrollIntoView({ behavior: 'smooth' })],
       title: '引导结束',
@@ -933,7 +936,7 @@
   review{"运营审核<br/>只看视频、作品类型、截图<br/>用户匿名"}:::ops
   reject["驳回：这个作品作废<br/>换别的作品再试<br/>每个账号最多 3 次"]:::stop
   chat["Cola 在主对话里主动发消息<br/>附上视频，用自己的语气介绍<br/>（用户正在聊天就等这一轮结束）<br/>和推荐一样不弹系统通知"]:::reach
-  card["心迹里同时出现视频卡片<br/>（带红点）"]:::reach
+  card["发现里同时出现视频卡片<br/>（带红点）"]:::reach
   next["用户：播放 / 下载 / 直接回复 Cola<br/>→ 接着改这个视频<br/>→ 给别的作品也做一个"]:::reach
   done(["这个账号完成，以后不再做"]):::stop
 
