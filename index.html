@@ -460,28 +460,8 @@
     <span class="l-ops">后台人工审核</span>
     <span class="l-reach">触达用户</span>
     <span class="l-stop">结束 / 等待</span>
-    <span class="l-pend">待运营确认</span>
   </div>
   <div class="chart"><pre class="mermaid" id="g"></pre></div>
-
-  <h2>需要运营一起定的事</h2>
-  <div class="grid">
-    <div class="box pend">
-      <h3>待确认</h3>
-      <ol>
-        <li><b>卡片文案</b>：心迹里视频卡片的标题和说明。对话里的消息由 Cola 自己写，运营可以调整给它的写作要求。</li>
-        <li><b>审核</b>：谁来审、多久内审完。</li>
-      </ol>
-    </div>
-    <div class="box">
-      <h3>运营会接触到的地方</h3>
-      <ul>
-        <li><b>审核后台</b>（Dashboard）：看视频、作品类型、用的模板、一句话描述、原作品截图，点通过或驳回。看不到用户身份。</li>
-        <li><b>对话推送</b>：审核通过后，Cola 在用户的主对话里主动发消息附上视频；写作要求（语气、长度、不能说什么）由运营在服务端调整，不用发版。</li>
-        <li><b>数据</b>：效果对比在 PostHog；审核量、按模板统计的通过率在 Dashboard。</li>
-      </ul>
-    </div>
-  </div>
 
   <h2>关键规则</h2>
   <div class="box">
@@ -841,7 +821,7 @@
       body: '可以播放、下载。点「和 Cola 聊聊」会带着这张卡片回到主聊天。' },
     { center: true, next: '自己随便点点', alt: ['往下看流程图', () => $('flowchart').scrollIntoView({ behavior: 'smooth' })],
       title: '引导结束',
-      body: '还可以试试：<br>· 在聊天里说 <b>别再给我做视频了</b>，看功能怎么关掉；<br>· 点 <b>重新开始</b>，在后台选 <b>驳回</b>，看驳回后会怎样；<br>· 往下看 <b>流程图</b> 和 <b>需要运营一起定的事</b>。' }
+      body: '还可以试试：<br>· 在聊天里说 <b>别再给我做视频了</b>，看功能怎么关掉；<br>· 点 <b>重新开始</b>，在后台选 <b>驳回</b>，看驳回后会怎样；<br>· 往下看 <b>流程图</b> 和 <b>关键规则</b>。' }
   ]
   const WELCOME = { center: true, next: '开始引导', alt: ['我自己看', () => {}], noCount: true,
     title: '1 分钟看懂这个原型',
