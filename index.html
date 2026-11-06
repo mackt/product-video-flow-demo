@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>作品介绍视频原型</title>
+<style>
+  :root {
+    --bg: #f4f3f1; --fg: #1f1f1f; --muted: #6b6b6b; --card: #ffffff; --line: #e4e1dc;
+    --auto: #eef3fb; --auto-b: #7a9cd6;
+    --ops: #fff4e0; --ops-b: #e0a030;
+    --reach: #eaf6ee; --reach-b: #5aa877;
+    --stop: #f3f1ee; --stop-b: #b9b4ac;
+    --pend: #d9534f;
+    /* Cola App 窗口 */
+    --app-bg: #fafafa; --app-side: #f1f1f0; --app-surface: #ffffff; --app-line: rgba(0,0,0,.08);
+    --app-text: #191919; --app-muted: #8a8a8a; --app-sel: rgba(0,0,0,.06); --app-user: #f0efed;
+    --brand: rgb(241,117,45); --brand-soft: rgba(241,117,45,.1); --red: #ef4444;
+    --dash-bg: #f8f9fb; --dash-side: #ffffff; --dash-accent: #2563eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161616; --fg: #ececec; --muted: #a0a0a0; --card: #222; --line: #363636;
+      --auto: #1f2a3d; --auto-b: #6f93d0; --ops: #3a2f1a; --ops-b: #d49a30;
+      --reach: #1c3326; --reach-b: #5aa877; --stop: #2a2a2a; --stop-b: #6e6a64; --pend: #ff7a75;
+      --app-bg: #1c1c1c; --app-side: #232323; --app-surface: #262626; --app-line: rgba(255,255,255,.08);
+      --app-text: #ededed; --app-muted: #8f8f8f; --app-sel: rgba(255,255,255,.08); --app-user: #2f2f2f;
+      --brand-soft: rgba(241,117,45,.16); --dash-bg: #1a1c20; --dash-side: #202329; --dash-accent: #60a5fa;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161616; --fg: #ececec; --muted: #a0a0a0; --card: #222; --line: #363636;
+    --auto: #1f2a3d; --auto-b: #6f93d0; --ops: #3a2f1a; --ops-b: #d49a30;
+    --reach: #1c3326; --reach-b: #5aa877; --stop: #2a2a2a; --stop-b: #6e6a64; --pend: #ff7a75;
+    --app-bg: #1c1c1c; --app-side: #232323; --app-surface: #262626; --app-line: rgba(255,255,255,.08);
+    --app-text: #ededed; --app-muted: #8f8f8f; --app-sel: rgba(255,255,255,.08); --app-user: #2f2f2f;
+    --brand-soft: rgba(241,117,45,.16); --dash-bg: #1a1c20; --dash-side: #202329; --dash-accent: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 44px 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  button { font: inherit; color: inherit; }
+
+  /* ---------- 演示控制台 ---------- */
+  .console { display: grid; grid-template-columns: 1fr auto; gap: 12px 16px; align-items: start;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+  @media (max-width: 760px) { .console { grid-template-columns: 1fr; } }
+  .guide { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gstep { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .gstep.on { color: var(--fg); border-color: var(--reach-b); background: var(--reach); }
+  .gstep.now { color: var(--fg); border-color: var(--ops-b); background: var(--ops); font-weight: 600; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .hint b { color: var(--fg); }
+  .ctl { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .btn { font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; white-space: nowrap; }
+  .btn:hover:not(:disabled) { border-color: var(--muted); }
+  .btn.pri { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .btn.warn { color: var(--pend); border-color: var(--pend); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .state { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); grid-column: 1 / -1; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .state b { color: var(--fg); font-weight: 600; }
+  .scanlog { grid-column: 1 / -1; font: 12.5px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); display: none; }
+  .scanlog div::before { content: "› "; }
+  .scanlog .ok { color: var(--reach-b); }
+
+  /* ---------- 窗口通用 ---------- */
+  .stage { position: relative; }
+  .win { border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+    box-shadow: 0 18px 48px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06); background: var(--app-bg); color: var(--app-text); }
+  .titlebar { height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: var(--app-side);
+    border-bottom: 1px solid var(--app-line); font-size: 12.5px; color: var(--app-muted); user-select: none; }
+  .lights { display: flex; gap: 7px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+  .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+  .titlebar .t { flex: 1; text-align: center; margin-right: 50px; }
+  .scroller { overflow-x: auto; }
+
+  /* ---------- Cola App ---------- */
+  .app { display: grid; grid-template-columns: 196px 1fr; height: 700px; min-width: 760px; }
+  .side { background: var(--app-side); border-right: 1px solid var(--app-line); display: flex; flex-direction: column; padding: 10px 8px; gap: 2px; }
+  .nav { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; border: 0; background: none; text-align: left; width: 100%; position: relative; }
+  .nav:hover { background: var(--app-sel); }
+  .nav.sel { background: var(--app-sel); font-weight: 600; }
+  .nav svg { width: 18px; height: 18px; flex: none; }
+  .nav .ava { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffb27a, var(--brand)); flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+  .nav .badge { position: absolute; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); display: none; }
+  .nav .badge.show { display: block; }
+  .side .sep { height: 1px; background: var(--app-line); margin: 8px 6px; }
+  .side .grow { flex: 1; }
+  .side .sect { font-size: 11.5px; color: var(--app-muted); padding: 6px 10px 2px; }
+  .chatlink { font-size: 13px; padding: 5px 10px 5px 14px; border-radius: 6px; color: var(--app-muted); cursor: pointer; }
+  .chatlink.sel { color: var(--app-text); background: var(--app-sel); }
+  .page { display: none; min-width: 0; height: 700px; }
+  .page.show { display: flex; flex-direction: column; }
+  .phead { height: 50px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--app-line); font-weight: 600; font-size: 14.5px; }
+  .phead small { font-weight: 400; color: var(--app-muted); font-size: 12px; }
+
+  /* 聊天 */
+  .thread { flex: 1; overflow-y: auto; padding: 20px 0; scroll-behavior: smooth; }
+  .col { max-width: 680px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 18px; }
+  .m { font-size: 14.5px; line-height: 1.7; }
+  .m.u { align-self: flex-end; max-width: 78%; background: var(--app-user); padding: 9px 14px; border-radius: 16px; }
+  .m.c { display: flex; gap: 10px; }
+  .m.c .ava { width: 26px; height: 26px; border-radius: 50%; flex: none; background: radial-gradient(circle at 35% 35%, #ffb27a, var(--brand)); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .m.c .body { min-width: 0; flex: 1; }
+  .m.sys { align-self: center; font-size: 12px; color: var(--app-muted); }
+  .m .quote { font-size: 12px; color: var(--app-muted); border-left: 2px solid var(--app-line); padding-left: 8px; margin-bottom: 4px; }
+  .m.enter { animation: rise .35s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+  .typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--app-muted); margin-right: 4px; animation: blink 1s infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s; } .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .composer-wrap { flex: none; padding: 0 24px 16px; }
+  .composer { max-width: 680px; margin: 0 auto; background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 16px; padding: 10px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+  .qchip { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--app-muted); background: var(--app-sel); border-radius: 8px; padding: 5px 8px; margin-bottom: 8px; }
+  .qchip.show { display: flex; }
+  .qchip b { color: var(--app-text); font-weight: 500; flex: 1; }
+  .qchip button { border: 0; background: none; cursor: pointer; color: var(--app-muted); }
+  .crow { display: flex; gap: 8px; align-items: flex-end; }
+  .crow textarea { flex: 1; border: 0; outline: 0; resize: none; background: transparent; font: inherit; font-size: 14.5px; color: var(--app-text); height: 24px; max-height: 120px; }
+  .send { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--app-text); color: var(--app-bg); cursor: pointer; flex: none; display: flex; align-items: center; justify-content: center; }
+  .send:disabled { opacity: .25; cursor: default; }
+  .sugs { max-width: 680px; margin: 0 auto 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .sug { font-size: 12.5px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
+  .sug:hover { border-color: var(--brand); }
+  .demo-tag { align-self: center; font-size: 11px; color: var(--app-muted); background: repeating-linear-gradient(135deg, var(--app-sel) 0 4px, transparent 4px 8px); border: 1px solid var(--app-line); border-radius: 4px; padding: 1px 6px; margin-right: 2px; }
+
+  /* 视频播放器 */
+  .player { position: relative; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background: #000; color: #fff; user-select: none; max-width: 440px; margin-top: 10px; }
+  .player .scene { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 7%; opacity: 0; transition: opacity .45s; background: linear-gradient(150deg, var(--v1), var(--v2)); }
+  .player .scene.on { opacity: 1; }
+  .player h4 { margin: 0; font-size: clamp(14px, 2.2vw, 22px); letter-spacing: .02em; }
+  .player p { margin: 6px 0 0; font-size: clamp(10px, 1.3vw, 13px); opacity: .85; }
+  .player .ui { width: 60%; aspect-ratio: 16/9; margin-top: 10px; border-radius: 6px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); position: relative; overflow: hidden; }
+  .player .ui i { position: absolute; left: 8%; height: 9%; border-radius: 3px; background: rgba(255,255,255,.8); }
+  .player .scene.on .ui i { animation: grow 1.4s ease-out both; }
+  @keyframes grow { from { width: 0; } }
+  .player .wave { position: absolute; bottom: -22%; left: -10%; right: -10%; height: 46%; border-radius: 50%; background: rgba(255,255,255,.12); }
+  .player .scene.on .wave { animation: drift 3s ease-in-out infinite alternate; }
+  @keyframes drift { to { transform: translateX(6%); } }
+  .player .scene.outro { background: #111; }
+  .player .outro .logo { font-weight: 700; font-size: clamp(15px, 2.2vw, 20px); }
+  .player .big { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.22); border: 0; cursor: pointer; z-index: 2; }
+  .player .big span { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.92); color: #111; display: flex; align-items: center; justify-content: center; font-size: 17px; padding-left: 3px; }
+  .player.playing .big { display: none; }
+  .player .bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 8px; padding: 18px 10px 7px; background: linear-gradient(transparent, rgba(0,0,0,.55)); font-size: 11px; opacity: 0; transition: opacity .2s; }
+  .player:hover .bar, .player.playing .bar { opacity: 1; }
+  .player .bar button { border: 0; background: none; color: #fff; cursor: pointer; padding: 0 3px; font-size: 13px; display: flex; align-items: center; opacity: .9; }
+  .player .bar button:hover { opacity: 1; }
+  .player .track { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); cursor: pointer; position: relative; }
+  .player .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: #fff; width: 0; }
+  .vactions { display: flex; gap: 6px; margin-top: 8px; }
+  .vbtn { font-size: 12.5px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
+  .vbtn:hover { border-color: var(--app-muted); }
+
+  /* 心迹 */
+  .feed { flex: 1; overflow-y: auto; padding: 18px 24px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .filter { font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
+  .filter.sel { background: var(--app-text); color: var(--app-bg); border-color: var(--app-text); }
+  .fdesc { font-size: 12.5px; color: var(--app-muted); margin-bottom: 14px; }
+  .fgrid { column-count: 2; column-gap: 14px; }
+  @media (max-width: 1100px) { .fgrid { column-count: 1; } }
+  .fcard { break-inside: avoid; background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 14px; padding: 14px; margin-bottom: 14px; position: relative; }
+  .fcard.enter { animation: rise .4s ease-out; }
+  .fcard .tagline { font-size: 12px; color: var(--brand); margin-bottom: 4px; }
+  .fcard h5 { margin: 0 0 4px; font-size: 15px; }
+  .fcard p { margin: 0; font-size: 13px; color: var(--app-muted); line-height: 1.6; }
+  .fcard .player { max-width: none; }
+  .fcard .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--app-muted); }
+  .fcard .unread { position: absolute; top: 14px; right: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+  .fcard .cover { height: 92px; border-radius: 10px; margin-bottom: 10px; }
+  .chatbtn { font-size: 12.5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--app-line); background: var(--app-surface); cursor: pointer; color: var(--app-text); }
+  .chatbtn:hover { border-color: var(--brand); color: var(--brand); }
+  .empty { color: var(--app-muted); font-size: 13px; text-align: center; padding: 30px 0; }
+
+  /* 项目 / 占位页 */
+  .plist { padding: 16px 24px; overflow-y: auto; }
+  .pitem { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--app-line); background: var(--app-surface); margin-bottom: 8px; cursor: pointer; }
+  .pitem .pi { width: 34px; height: 34px; border-radius: 8px; flex: none; }
+  .pitem div { min-width: 0; }
+  .pitem b { display: block; font-size: 14px; font-weight: 600; }
+  .pitem small { color: var(--app-muted); font-size: 12px; }
+  .placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--app-muted); font-size: 13.5px; text-align: center; padding: 24px; }
+
+  /* 通知 / toast */
+  .notif { position: absolute; top: 52px; right: 16px; z-index: 20; width: 300px; background: var(--app-surface); color: var(--app-text);
+    border: 1.5px dashed var(--pend); border-radius: 12px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.15); font-size: 13px; display: none; cursor: pointer; }
+  .notif.show { display: block; animation: rise .3s ease-out; }
+  .notif small { display: block; color: var(--pend); font-size: 11px; margin-top: 4px; }
+  .toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 30; background: #111; color: #fff; font-size: 13px; padding: 7px 14px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .2s; white-space: nowrap; }
+  .toast.show { opacity: .92; }
+
+  /* 全屏播放 */
+  .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.82); display: none; align-items: center; justify-content: center; padding: 16px; }
+  .lightbox.show { display: flex; }
+  .lightbox .player { width: min(960px, 100%); max-width: none; margin: 0; }
+  .lightbox .x { position: absolute; top: 14px; right: 18px; color: #fff; background: none; border: 0; font-size: 24px; cursor: pointer; }
+
+  /* ---------- 审核后台 ---------- */
+  .dash-wrap { margin-top: 18px; display: none; }
+  .dash-wrap.show { display: block; animation: rise .3s ease-out; }
+  .dash { display: grid; grid-template-columns: 180px 1fr; min-width: 760px; min-height: 520px; background: var(--dash-bg); color: var(--app-text); }
+  .dside { background: var(--dash-side); border-right: 1px solid var(--app-line); padding: 12px 8px; font-size: 13.5px; }
+  .dside .logo { font-weight: 700; padding: 4px 10px 12px; }
+  .dside .it { padding: 7px 10px; border-radius: 8px; color: var(--app-muted); display: flex; justify-content: space-between; }
+  .dside .it.sel { background: var(--app-sel); color: var(--app-text); font-weight: 600; }
+  .dside .cnt { font-size: 11px; background: var(--dash-accent); color: #fff; border-radius: 999px; padding: 0 7px; }
+  .dmain { padding: 16px 20px; min-width: 0; }
+  .dmain h3 { margin: 0 0 12px; font-size: 16px; }
+  .dtable { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 10px; overflow: hidden; }
+  .dtable th { text-align: left; font-weight: 500; color: var(--app-muted); padding: 8px 10px; border-bottom: 1px solid var(--app-line); background: var(--app-side); }
+  .dtable td { padding: 9px 10px; border-bottom: 1px solid var(--app-line); }
+  .dtable tr.click { cursor: pointer; } .dtable tr.click:hover td { background: var(--app-sel); }
+  .dtable tr.cur td { background: var(--brand-soft); }
+  .st { font-size: 11.5px; padding: 1px 8px; border-radius: 999px; }
+  .st.wait { background: var(--ops); } .st.ok { background: var(--reach); } .st.bad { color: var(--pend); border: 1px solid var(--pend); }
+  .detail { margin-top: 14px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; background: var(--app-surface); border: 1px solid var(--app-line); border-radius: 10px; padding: 14px; }
+  @media (max-width: 900px) { .detail { grid-template-columns: 1fr; } }
+  .detail .player { max-width: none; margin: 0; }
+  .kv { font-size: 13px; }
+  .kv div { margin: 3px 0; } .kv span { color: var(--app-muted); display: inline-block; width: 4.6em; }
+  .shots { display: flex; gap: 6px; margin: 8px 0 12px; }
+  .shot { flex: 1; aspect-ratio: 16/10; border-radius: 6px; position: relative; overflow: hidden; }
+  .shot::after { content: ""; position: absolute; left: 10%; right: 10%; top: 18%; height: 12%; background: rgba(255,255,255,.75); border-radius: 3px; box-shadow: 0 14px 0 -2px rgba(255,255,255,.4), 0 28px 0 -2px rgba(255,255,255,.3); }
+  .dact { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  select.btn { padding: 5px 8px; }
+  .dnote { font-size: 12px; color: var(--app-muted); margin-top: 8px; }
+  .dres { font-size: 13px; margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--app-sel); display: none; }
+
+  /* ---------- 流程图与说明 ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1.5px solid; }
+  .l-auto::before { background: var(--auto); border-color: var(--auto-b) !important; }
+  .l-ops::before { background: var(--ops); border-color: var(--ops-b) !important; }
+  .l-reach::before { background: var(--reach); border-color: var(--reach-b) !important; }
+  .l-stop::before { background: var(--stop); border-color: var(--stop-b) !important; }
+  .l-pend::before { background: transparent; border-color: var(--pend) !important; border-style: dashed !important; }
+  .chart { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-x: auto; }
+  .chart .mermaid { min-width: 640px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .box h3 { margin: 0 0 8px; font-size: 15px; }
+  .box ol, .box ul { margin: 0; padding-left: 20px; }
+  .box li { margin: 4px 0; }
+  .pend { border-color: var(--pend); border-style: dashed; }
+  .pend h3 { color: var(--pend); }
+  table.rules { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.rules td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.rules td:first-child { color: var(--muted); white-space: nowrap; width: 7em; }
+
+  /* ---------- 新手引导 ---------- */
+  .tour-dim { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.5); display: none; }
+  .tour-hole { position: fixed; z-index: 90; border-radius: 12px; pointer-events: none; display: none;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.45); outline: 2px solid var(--brand); outline-offset: 2px; animation: halo 1.6s ease-in-out infinite; }
+  @keyframes halo { 50% { outline-color: rgba(241,117,45,.35); outline-offset: 6px; } }
+  .tour-pop { position: fixed; z-index: 95; width: min(360px, calc(100vw - 32px)); background: var(--card); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 12px; box-shadow: 0 18px 48px rgba(0,0,0,.25); display: none; font-size: 14px; }
+  .tour-pop.center { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 32px)); padding: 22px 24px 18px; }
+  .tour-pop h4 { margin: 6px 0 6px; font-size: 16px; line-height: 1.45; }
+  .tour-pop p { margin: 0 0 8px; color: var(--muted); line-height: 1.65; }
+  .tour-pop p b { color: var(--fg); }
+  .tour-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .tour-head .n { margin-left: auto; }
+  .role { font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 999px; border: 1px solid; }
+  .role.sys { background: var(--auto); border-color: var(--auto-b); }
+  .role.ops { background: var(--ops); border-color: var(--ops-b); }
+  .role.user { background: var(--reach); border-color: var(--reach-b); }
+  .tour-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .tour-foot .wait { font-size: 12.5px; color: var(--brand); flex: 1; }
+  .tour-foot .skip { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 12.5px; padding: 0; margin-right: auto; }
+  .tour-foot .wait + .skip { margin-right: 0; }
+  .roles3 { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 8px; align-items: stretch; margin: 14px 0 12px; }
+  .roles3 .r { border: 1.5px solid; border-radius: 10px; padding: 9px 10px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .roles3 .r b { display: block; color: var(--fg); font-size: 13.5px; margin-bottom: 2px; }
+  .roles3 .r.sys { background: var(--auto); border-color: var(--auto-b); }
+  .roles3 .r.ops { background: var(--ops); border-color: var(--ops-b); }
+  .roles3 .r.user { background: var(--reach); border-color: var(--reach-b); }
+  .roles3 .arr { align-self: center; color: var(--muted); }
+  @media (max-width: 560px) { .roles3 { grid-template-columns: 1fr; } .roles3 .arr { transform: rotate(90deg); justify-self: center; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>作品介绍视频：一期 MVP 原型</h1>
+  <p class="sub">用户用 Cola 做出网页作品后，Cola 每晚自动给作品做一段介绍视频，经人工审核后在 App 里推给用户，看能不能激发用户继续用 Cola 做视频。每个账号最多成功推送一次。下面是可交互的模拟：左边的 Cola 窗口代表一位做过「破浪手账」游泳小游戏的用户，审核后台单独打开。界面是示意，不是最终视觉。</p>
+
+  <!-- 演示控制台 -->
+  <div class="console">
+    <div>
+      <div class="guide" id="guide">
+        <span class="gstep now" data-g="0">① 模拟今晚的每日扫描</span>
+        <span class="gstep" data-g="1">② 在审核后台通过</span>
+        <span class="gstep" data-g="2">③ 用户收到 Cola 的消息</span>
+        <span class="gstep" data-g="3">④ 让 Cola 接着改</span>
+        <span class="gstep" data-g="4">⑤ 去心迹看卡片</span>
+      </div>
+      <div class="hint" id="hint">先点右边的 <b>模拟今晚的每日扫描</b>。扫描、判断、制作都在用户电脑上自动完成，用户这时什么都看不到。</div>
+    </div>
+    <div class="ctl">
+      <button class="btn pri" id="scan">模拟今晚的每日扫描</button>
+      <button class="btn" id="toggleDash">打开审核后台</button>
+      <button class="btn" id="reset">重新开始</button>
+      <button class="btn" id="tourBtn">新手引导</button>
+    </div>
+    <div class="scanlog" id="scanlog"></div>
+    <div class="state">
+      <span>实验分组 <b>实验组</b></span>
+      <span>账号状态 <b id="s-status">还没收到过视频</b></span>
+      <span>剩余审核机会 <b id="s-left">3</b></span>
+      <span>功能 <b id="s-on">开启</b></span>
+    </div>
+  </div>
+
+  <!-- Cola App 窗口 -->
+  <div class="stage">
+    <div class="win scroller">
+      <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="t">Cola</div></div>
+      <div class="app" id="app">
+        <aside class="side">
+          <button class="nav sel" data-p="chat"><span class="ava">C</span>Cola<span class="badge" id="b-chat"></span></button>
+          <button class="nav" data-p="soul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>心迹<span class="badge" id="b-soul"></span></button>
+          <button class="nav" data-p="laicai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg>来财</button>
+          <button class="nav" data-p="creative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M7 21h14V9"/><circle cx="8" cy="9.5" r="1.3"/><path d="m3 15 4-3.5 3 2.5 3-2 4 3"/></svg>创作</button>
+          <button class="nav" data-p="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>项目</button>
+          <div class="sep"></div>
+          <div class="sect">聊天列表</div>
+          <div class="chatlink sel" data-p="chat">主聊天</div>
+          <div class="grow"></div>
+          <button class="nav" data-p="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5h4v14H4zM10 5h4v14h-4zM16 6l3.5-1 2.5 13.5-3.5 1z"/></svg>资料库</button>
+          <button class="nav" data-p="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M4 12h16M4 17h16"/></svg>菜单</button>
+        </aside>
+
+        <!-- 主聊天 -->
+        <section class="page show" id="p-chat">
+          <div class="phead">主聊天 <small>Cola</small></div>
+          <div class="thread" id="thread">
+            <div class="col" id="col">
+              <div class="m sys">10 月 27 日</div>
+              <div class="m u">帮我把破浪手账的关卡难度再调低一点，第三关太难了</div>
+              <div class="m c"><div class="ava">C</div><div class="body">调好了：第三关的目标距离从 800 米降到 600 米，体力消耗也减了一档。刷新页面就能看到。</div></div>
+              <div class="m u">好的，完美！就这样吧</div>
+              <div class="m c"><div class="ava">C</div><div class="body">好～ 祝你下水顺利，有想加的玩法随时叫我。</div></div>
+              <div class="m sys">今天</div>
+              <div class="m u">明天要开周会，帮我列个提纲：上周做了哪些事、这周计划</div>
+              <div class="m c"><div class="ava">C</div><div class="body">给你整理了一版：<br>1. 上周完成：破浪手账上线、关卡难度调整<br>2. 本周计划：加入好友排行榜、收集 10 位用户反馈<br>3. 需要协助：找两位同事帮忙试玩</div></div>
+            </div>
+          </div>
+          <div class="composer-wrap">
+            <div class="sugs" id="sugs"></div>
+            <div class="composer">
+              <div class="qchip" id="qchip"><span>引用</span><b id="qtext"></b><button id="qclose" aria-label="移除引用">✕</button></div>
+              <div class="crow">
+                <textarea id="input" rows="1" placeholder="给 Cola 发消息…"></textarea>
+                <button class="send" id="send" disabled aria-label="发送"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 心迹 -->
+        <section class="page" id="p-soul">
+          <div class="phead">心迹 <small id="soul-unread"></small></div>
+          <div class="feed">
+            <div class="filters" id="filters">
+              <button class="filter sel" data-f="all">全部内容</button>
+              <button class="filter" data-f="rec">小 Co 的推荐</button>
+              <button class="filter" data-f="imp">小 Co 的悄悄话</button>
+              <button class="filter" data-f="like">我的收藏</button>
+            </div>
+            <div class="fdesc" id="fdesc">小 Co 的推荐和悄悄话，都在这里。</div>
+            <div class="fgrid" id="fgrid">
+              <div class="fcard" data-k="rec">
+                <div class="cover" style="background:linear-gradient(135deg,#bfe3f5,#6fb7da)"></div>
+                <div class="tagline">#小 Co 为你挑的</div>
+                <h5>游泳训练里的「间歇法」到底怎么练</h5>
+                <p>你最近一直在琢磨训练节奏，这篇文章把间歇训练拆得很细，也许能给破浪手账的关卡设计一点灵感。</p>
+                <div class="row"><span>文章 · 昨天</span><button class="chatbtn" data-quote="游泳训练里的「间歇法」到底怎么练">和 Cola 聊聊</button></div>
+              </div>
+              <div class="fcard" data-k="imp">
+                <div class="tagline">#小 Co 的悄悄话</div>
+                <h5>一个人做游戏，也会有人陪着测</h5>
+                <p>那天你说「完美，就这样吧」的时候，我能感觉到你松了口气。第三关终于不劝退人了。</p>
+                <div class="row"><span>心迹 · 10 月 27 日</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 项目 -->
+        <section class="page" id="p-projects">
+          <div class="phead">项目 <small>子聊天</small></div>
+          <div class="plist">
+            <div class="pitem"><div class="pi" style="background:linear-gradient(150deg,#0e4f7a,#1b8fb8)"></div><div><b>破浪手账</b><small>~/cola/破浪手账 · 最近：调低第三关难度 · 10 月 27 日</small></div></div>
+            <div class="pitem"><div class="pi" style="background:linear-gradient(150deg,#f4a259,#e76f51)"></div><div><b>练习台下载页</b><small>~/cola/liantai-desktop · 已部署到 GitHub Pages · 10 月 22 日</small></div></div>
+            <div class="pitem"><div class="pi" style="background:linear-gradient(150deg,#2a9d8f,#264653)"></div><div><b>周报素材</b><small>~/Documents/周报 · 10 月 20 日</small></div></div>
+          </div>
+          <div class="placeholder">每日扫描就是从这些对话里找网页作品：只看写过哪些网页文件、部署过哪些网址。</div>
+        </section>
+
+        <section class="page" id="p-laicai"><div class="phead">来财</div><div class="placeholder">（与本功能无关）</div></section>
+        <section class="page" id="p-creative"><div class="phead">创作</div><div class="placeholder">创作页的素材库一期不放这些视频。<br>自动做的视频只出现在主聊天和心迹里。</div></section>
+        <section class="page" id="p-library"><div class="phead">资料库</div><div class="placeholder">（与本功能无关）</div></section>
+        <section class="page" id="p-menu"><div class="phead">菜单</div><div class="placeholder">一期不在设置里加开关。<br>用户在聊天里说「别再给我做视频了」，Cola 会帮用户关掉。</div></section>
+      </div>
+    </div>
+    <div class="notif" id="notif">
+      <b>Cola</b><br>给你的「破浪手账」做了一段介绍视频，来看看？
+      <small>待运营确认：要不要发这条系统通知</small>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <!-- 审核后台窗口 -->
+  <div class="dash-wrap" id="dashWrap">
+    <div class="win scroller">
+      <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div><div class="t">Cola 管理后台 · dashboard.cola.app</div></div>
+      <div class="dash">
+        <aside class="dside">
+          <div class="logo">Cola Admin</div>
+          <div class="it">用户</div>
+          <div class="it">计费</div>
+          <div class="it">创作模板</div>
+          <div class="it sel">作品视频审核 <span class="cnt" id="d-cnt">0</span></div>
+          <div class="it">数据看板</div>
+        </aside>
+        <div class="dmain">
+          <h3>作品视频审核</h3>
+          <table class="dtable">
+            <thead><tr><th>用户</th><th>作品</th><th>类型</th><th>模板</th><th>提交时间</th><th>状态</th></tr></thead>
+            <tbody id="d-rows"></tbody>
+          </table>
+          <div class="detail" id="detail" style="display:none">
+            <div>
+              <div class="player" id="d-player"></div>
+              <div class="dnote">点播放查看成片。审核页看不到用户身份，只有匿名编号。</div>
+            </div>
+            <div>
+              <div class="kv" id="d-kv"></div>
+              <div style="font-size:12px;color:var(--app-muted);margin-top:8px">原作品截图（用来对照视频有没有介绍错）</div>
+              <div class="shots" id="d-shots"></div>
+              <div class="dact">
+                <button class="btn pri" id="approve">通过</button>
+                <button class="btn warn" id="reject">驳回</button>
+              </div>
+              <div class="dres" id="dres"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox"><button class="x" id="lbx" aria-label="关闭">✕</button><div class="player" id="lbp"></div></div>
+
+  <div class="tour-dim" id="tourDim"></div>
+  <div class="tour-hole" id="tourHole"></div>
+  <div class="tour-pop" id="tourPop" role="dialog" aria-live="polite"></div>
+
+  <h2 id="flowchart">流程图</h2>
+  <div class="legend">
+    <span class="l-auto">用户电脑上自动运行</span>
+    <span class="l-ops">后台人工审核</span>
+    <span class="l-reach">触达用户</span>
+    <span class="l-stop">结束 / 等待</span>
+    <span class="l-pend">待运营确认</span>
+  </div>
+  <div class="chart"><pre class="mermaid" id="g"></pre></div>
+
+  <h2>需要运营一起定的事</h2>
+  <div class="grid">
+    <div class="box pend">
+      <h3>待确认</h3>
+      <ol>
+        <li><b>系统通知</b>：主对话消息和心迹红点之外，要不要再加一条系统通知（用户不在电脑前时也能看到）。原型右上角红色虚线框就是它。</li>
+        <li><b>卡片文案</b>：心迹里视频卡片的标题和说明。对话里的消息由 Cola 自己写，运营可以调整给它的写作要求。</li>
+        <li><b>审核</b>：谁来审、多久内审完。</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h3>运营会接触到的地方</h3>
+      <ul>
+        <li><b>审核后台</b>（Dashboard）：看视频、作品类型、用的模板、一句话描述、原作品截图，点通过或驳回。看不到用户身份。</li>
+        <li><b>对话推送</b>：审核通过后，Cola 在用户的主对话里主动发消息附上视频；写作要求（语气、长度、不能说什么）由运营在服务端调整，不用发版。</li>
+        <li><b>数据</b>：效果对比在 PostHog；审核量、按模板统计的通过率在 Dashboard。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>关键规则</h2>
+  <div class="box">
+    <table class="rules">
+      <tr><td>频率</td><td>每个账号审核通过一次后永久停止；审核中不做新的；被驳回可换作品再试，最多 3 次。一个账号多台电脑共享这个状态。</td></tr>
+      <tr><td>作品范围</td><td>单文件网页、已部署的网站、前端项目，覆盖小工具 / 小游戏、Web 应用、可交互原型、落地页 / 官网四类。小程序不做。</td></tr>
+      <tr><td>实验</td><td>按账号分组：80% 收视频，20% 不收作对照。比例可在服务端调整。</td></tr>
+      <tr><td>费用</td><td>自动做视频不扣用户积分。用户之后在聊天里让 Cola 改视频，按正常规则计费。</td></tr>
+      <tr><td>隐私</td><td>页面里有真实客户 / 个人数据的作品直接跳过；审核页用户匿名；后台视频审核结束 30 天后自动删除。</td></tr>
+      <tr><td>触达</td><td>只在 App 内：主对话消息 + 心迹卡片。不发邮件、不发短信。</td></tr>
+      <tr><td>关闭</td><td>用户在聊天里说不想要，Cola 会帮用户关掉。服务端有总开关，随时可以整体下线，已推送的视频保留。</td></tr>
+      <tr><td>范围</td><td>国际版和中国版都上，只覆盖桌面端。</td></tr>
+    </table>
+  </div>
+</main>
+
+<script>
+  // ================= 视频 =================
+  const VIDEOS = {
+    ocean: { v1: '#0e4f7a', v2: '#1b8fb8', title: '破浪手账', scenes: [
+      { h: '破浪手账', p: '把游泳训练变成一场养成游戏', wave: true },
+      { h: '每天打卡，记录每一趟', p: '距离、配速、泳姿自动入账', ui: [20, 38, 56] },
+      { h: '闯关挑战，解锁新泳姿', p: '从自由泳到蝶泳，一关一关来', ui: [30, 52] },
+      { h: '成长曲线，一眼看到进步', p: '每周自动生成训练报告', ui: [24, 44, 64, 80] }] },
+    navy: { v1: '#0b2a5b', v2: '#2f5fb3', title: '破浪手账', scenes: null },
+    short: { v1: '#0e4f7a', v2: '#1b8fb8', title: '破浪手账', scenes: [
+      { h: '破浪手账', p: '把游泳训练变成一场养成游戏', wave: true },
+      { h: '打卡、闯关、看成长', p: '一个人练游泳也不无聊', ui: [24, 44, 64] }] },
+    liantai: { v1: '#b4532a', v2: '#f4a259', title: '练习台', scenes: [
+      { h: '练习台', p: '专注练习的桌面小助手', wave: true },
+      { h: '一键开始，计时专注', p: '支持 macOS 与 Windows', ui: [26, 46] },
+      { h: '免费下载', p: 'liantai.example.com', ui: [36] }] }
+  }
+  VIDEOS.navy.scenes = VIDEOS.ocean.scenes
+  const SCENE_MS = 2000
+
+  function mountPlayer(el, key) {
+    const v = VIDEOS[key]
+    const scenes = [...v.scenes, { outro: true }]
+    el.style.setProperty('--v1', v.v1); el.style.setProperty('--v2', v.v2)
+    el.dataset.key = key
+    el.innerHTML = scenes.map((s) => s.outro
+      ? `<div class="scene outro"><div class="logo">${v.title}</div><p>Made with Cola</p></div>`
+      : `<div class="scene"><h4>${s.h}</h4><p>${s.p}</p>${s.wave ? '<div class="wave"></div>' : ''}${s.ui ? `<div class="ui">${s.ui.map((t, j) => `<i style="top:${t}%;width:${62 - j * 10}%"></i>`).join('')}</div>` : ''}</div>`
+    ).join('') +
+      `<button class="big" aria-label="播放"><span>▶</span></button>
+       <div class="bar"><button class="pp" aria-label="播放/暂停">▶</button><span class="time">0:00 / 0:${String(scenes.length * 2).padStart(2, '0')}</span><div class="track"><div class="fill"></div></div><button class="dl" aria-label="下载" title="下载"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button><button class="fs" aria-label="全屏" title="全屏"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>`
+    const els = el.querySelectorAll('.scene'), fill = el.querySelector('.fill'), time = el.querySelector('.time'), pp = el.querySelector('.pp')
+    const total = scenes.length * SCENE_MS
+    let pos = 0, raf = null, last = 0, playing = false
+    els[0].classList.add('on')
+    const render = () => {
+      const idx = Math.min(scenes.length - 1, Math.floor(pos / SCENE_MS))
+      els.forEach((s, i) => s.classList.toggle('on', i === idx))
+      fill.style.width = (pos / total * 100) + '%'
+      time.textContent = `0:${String(Math.floor(pos / 1000)).padStart(2, '0')} / 0:${String(total / 1000).padStart(2, '0')}`
+    }
+    const loop = (t) => {
+      pos += t - last; last = t
+      if (pos >= total) { pos = 0; pause(); render(); return }
+      render(); raf = requestAnimationFrame(loop)
+    }
+    const play = () => { if (playing) return; playing = true; el.classList.add('playing'); pp.textContent = '❚❚'; last = performance.now(); raf = requestAnimationFrame(loop); el.dispatchEvent(new CustomEvent('played', { bubbles: true })) }
+    const pause = () => { playing = false; cancelAnimationFrame(raf); el.classList.remove('playing'); pp.textContent = '▶' }
+    el.querySelector('.big').addEventListener('click', play)
+    pp.addEventListener('click', () => playing ? pause() : play())
+    el.querySelector('.track').addEventListener('click', (e) => {
+      const r = e.currentTarget.getBoundingClientRect(); pos = (e.clientX - r.left) / r.width * total; render()
+    })
+    el.querySelector('.fs').addEventListener('click', () => {
+      pause()
+      if (el.closest('.lightbox')) $('lbx').click(); else openLightbox(key)
+    })
+    el.querySelector('.dl').addEventListener('click', () => toast('已保存到「下载」文件夹'))
+    el._pause = pause
+  }
+  function playerBlock(key) { return `<div class="player" data-mount="${key}"></div>` }
+  function mountAll(root) { root.querySelectorAll('[data-mount]').forEach((el) => { mountPlayer(el, el.dataset.mount); el.removeAttribute('data-mount') }) }
+
+  const $ = (id) => document.getElementById(id)
+  function openLightbox(key) { const p = $('lbp'); p.innerHTML = ''; mountPlayer(p, key); $('lightbox').classList.add('show'); p.querySelector('.big').click() }
+  $('lbx').addEventListener('click', () => { $('lbp')._pause && $('lbp')._pause(); $('lightbox').classList.remove('show') })
+  $('lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') $('lbx').click() })
+
+  let toastT
+  function toast(text) { const t = $('toast'); t.textContent = text; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800) }
+
+  // ================= 状态与引导 =================
+  const S = { page: 'chat', scanned: false, approved: false, rejectedLeft: 3, off: false, busy: false }
+  const HINTS = [
+    '先点右边的 <b>模拟今晚的每日扫描</b>。扫描、判断、制作都在用户电脑上自动完成，用户这时什么都看不到。',
+    '视频已上传。点 <b>打开审核后台</b>，在列表里点「破浪手账」那一行，看完视频后点 <b>通过</b>（也可以试试驳回）。播放器右下角有下载和全屏。',
+    '回到上面的 Cola 窗口：用户空闲时，Cola 会在主聊天里主动发消息附上视频。可以先切到别的页面，看看左侧的红点。',
+    '在输入框里随便说点什么，比如 <b>把配色改成深蓝</b>、<b>能再短一点吗</b>、<b>这个视频是怎么来的</b>、<b>你们上传我的作品了吗</b>、<b>给练习台也做一个</b>、<b>别再给我做视频了</b>。',
+    '点左侧 <b>心迹</b>，视频卡片带红点；点「和 Cola 聊聊」会带着引用回到主聊天。'
+  ]
+  function guide(n) {
+    document.querySelectorAll('.gstep').forEach((g) => { const i = +g.dataset.g; g.classList.toggle('on', i < n); g.classList.toggle('now', i === n) })
+    $('hint').innerHTML = HINTS[Math.min(n, HINTS.length - 1)]
+  }
+  function setState() {
+    $('s-status').textContent = S.approved ? '已完成（以后不再生成）' : S.scanned ? '视频审核中' : S.rejectedLeft < 3 ? '已驳回，等下次扫描' : '还没收到过视频'
+    $('s-left').textContent = S.approved ? '—' : S.rejectedLeft
+    $('s-on').textContent = S.off ? '已由用户在聊天中关闭' : '开启'
+  }
+
+  // ================= 导航 =================
+  function go(p) {
+    S.page = p
+    document.querySelectorAll('.nav').forEach((n) => n.classList.toggle('sel', n.dataset.p === p))
+    document.querySelectorAll('.chatlink').forEach((n) => n.classList.toggle('sel', n.dataset.p === p))
+    document.querySelectorAll('.page').forEach((s) => s.classList.toggle('show', s.id === 'p-' + p))
+    if (p === 'chat') { $('b-chat').classList.remove('show'); $('notif').classList.remove('show'); scrollThread() }
+    if (p === 'soul') { $('b-soul').classList.remove('show'); if (S.approved) guide(Math.max(curGuide, 4)); tourEmit('soulOpened') }
+  }
+  let curGuide = 0
+  const _guide = guide; guide = (n) => { curGuide = n; _guide(n) }
+  document.querySelectorAll('[data-p]').forEach((n) => n.addEventListener('click', () => go(n.dataset.p)))
+  $('notif').addEventListener('click', () => go('chat'))
+
+  // ================= 聊天 =================
+  const col = $('col'), thread = $('thread')
+  function scrollThread() { requestAnimationFrame(() => { thread.scrollTop = thread.scrollHeight }) }
+  function addUser(text, quote) {
+    const d = document.createElement('div'); d.className = 'm u enter'
+    d.innerHTML = (quote ? `<div class="quote">${quote}</div>` : '') + text.replace(/</g, '&lt;')
+    col.appendChild(d); scrollThread()
+  }
+  function addSys(text) { const d = document.createElement('div'); d.className = 'm sys enter'; d.textContent = text; col.appendChild(d); scrollThread() }
+  function colaSay(html, video, delay = 900) {
+    S.busy = true; $('send').disabled = true
+    const d = document.createElement('div'); d.className = 'm c enter'
+    d.innerHTML = '<div class="ava">C</div><div class="body"><span class="typing"><span></span><span></span><span></span></span></div>'
+    col.appendChild(d); scrollThread()
+    return new Promise((res) => setTimeout(() => {
+      const body = d.querySelector('.body'); body.innerHTML = ''
+      let i = 0
+      const text = html
+      const step = () => {
+        i = Math.min(text.length, i + 3)
+        body.innerHTML = text.slice(0, i)
+        if (i < text.length) { setTimeout(step, 16) } else {
+          if (video) { body.insertAdjacentHTML('beforeend', playerBlock(video)); mountAll(body) }
+          scrollThread(); S.busy = false; $('send').disabled = !$('input').value.trim(); res(d)
+        }
+      }
+      step()
+    }, delay))
+  }
+
+  const input = $('input')
+  input.addEventListener('input', () => { input.style.height = '24px'; input.style.height = Math.min(120, input.scrollHeight) + 'px'; $('send').disabled = S.busy || !input.value.trim() })
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); submit() } })
+  $('send').addEventListener('click', submit)
+  $('qclose').addEventListener('click', () => { $('qchip').classList.remove('show'); $('sugs').innerHTML = '' })
+
+  function submit(textArg) {
+    const text = (typeof textArg === 'string' ? textArg : input.value).trim()
+    if (!text || S.busy) return
+    const quote = $('qchip').classList.contains('show') ? '引用：' + $('qtext').textContent : ''
+    addUser(text, quote)
+    input.value = ''; input.style.height = '24px'; $('send').disabled = true
+    $('qchip').classList.remove('show'); $('sugs').innerHTML = ''
+    used.add(text)
+    Promise.resolve(respond(text, quote)).then(() => { if (S.approved && !S.off) showDefaultSugs(); tourEmit('replied') })
+  }
+
+  function respond(t, quote) {
+    const has = (re) => re.test(t)
+    const aboutVideo = S.approved || quote.includes('介绍视频')
+    if (S.approved) guide(Math.max(curGuide, 3))
+    if (has(/不要|别再|关掉|关闭|不想要/) && has(/视频|做|推/)) {
+      S.off = true; setState()
+      return colaSay('好，已经关掉了，以后不会再自动给你的作品做视频。想用的时候跟我说一声就能再打开。')
+    }
+    if (has(/上传|服务器|有人看|审核|隐私|别人看/)) {
+      return colaSay('做好之后、发给你之前，视频传到了 Cola 团队那边做过一次质量检查，看的是这段视频和作品截图，不会关联你的身份，30 天后会删除。如果你不希望这样，我可以把这个功能关掉。')
+    }
+    if (has(/怎么来|哪来|怎么做的|为什么.*视频|谁做的/)) {
+      return colaSay('是我帮你做的。看你一直在打磨破浪手账，就顺手剪了一段介绍片。想改哪里直接告诉我。')
+    }
+    if (has(/练习台|别的作品|另一个|其他作品|也做/)) {
+      addSys('这一轮由用户发起，按正常规则计费')
+      return colaSay('好呀，「练习台」下载页挺适合的，我按落地页模板来做，稍等一下。').then(() =>
+        colaSay('做好了，用的是落地页模板，结尾留了下载地址：', 'liantai', 2200))
+    }
+    if (aboutVideo && has(/配色|颜色|蓝|风格|换/)) {
+      addSys('这一轮由用户发起，按正常规则计费')
+      return colaSay('换成深蓝色了，片尾也跟着调了一下：', 'navy', 1600)
+    }
+    if (aboutVideo && has(/短|秒|精简|快一点/)) {
+      addSys('这一轮由用户发起，按正常规则计费')
+      return colaSay('压到 6 秒了，中间三段合成了一段，适合发朋友圈：', 'short', 1600)
+    }
+    if (quote.includes('间歇法')) return colaSay('间歇法的核心是「高强度一段 + 恢复一段」交替。放进破浪手账的话，可以把它做成一种限时关卡。要我写个方案吗？')
+    return colaSay(S.approved
+      ? '收到～（原型只预置了几类回复：改配色、剪短、问视频怎么来的、问是否上传、给别的作品做视频、关闭这个功能。）'
+      : '收到～（视频还没推送。先按上面的步骤走一遍：模拟扫描 → 后台通过。）')
+  }
+
+  // ================= 每日扫描 =================
+  const logLines = [
+    ['00:37 每日任务启动：服务端总开关开启，账号在实验组，还没收到过视频', ''],
+    ['扫描昨天的对话（第一次运行回看 14 天）…', ''],
+    ['找到 2 个候选：破浪手账（已部署网址）、练习台下载页（已部署网址）', ''],
+    ['AI 判断：破浪手账 完成度高（用户说过「完美，就这样吧」），没有真实个人数据，选它', 'ok'],
+    ['本地制作：打开作品 → 提取页面文字和截图 → 选模板「操作演示」→ 写动画 → 自检通过 → 录成视频', ''],
+    ['上传到审核后台，账号进入「审核中」', 'ok']
+  ]
+  $('scan').addEventListener('click', () => {
+    if (S.scanned || S.approved) return
+    $('scan').disabled = true
+    const log = $('scanlog'); log.style.display = 'block'; log.innerHTML = ''
+    logLines.forEach(([t, cls], i) => setTimeout(() => {
+      const d = document.createElement('div'); d.textContent = t; if (cls) d.className = cls; log.appendChild(d)
+      if (i === logLines.length - 1) {
+        S.scanned = true; setState(); addRow(); guide(1); tourEmit('scanned')
+        $('toggleDash').classList.add('pri'); $('scan').classList.remove('pri')
+      }
+    }, 450 * (i + 1)))
+  })
+
+  // ================= 审核后台 =================
+  const ROWS = [
+    { id: 'self', user: 'u_3f9a2c71e0', work: '破浪手账', type: '小工具 / 小游戏', tpl: '操作演示 · 浅色 v3', form: '已部署网址', desc: '游泳训练养成网页游戏，打卡、闯关、成长曲线', shots: ['#0e4f7a,#1b8fb8', '#1b8fb8,#7fd1e8', '#0a3a5c,#1b8fb8'], video: 'ocean', status: 'wait' },
+    { id: 'o1', user: 'u_81c04d9b22', work: '色谱资料统一检索', type: 'Web 应用', tpl: '模块巡览 · v2', form: '已部署网址', desc: 'GC/GC-MS 多库资料检索网站', shots: ['#2a9d8f,#264653', '#e9c46a,#2a9d8f', '#264653,#2a9d8f'], video: 'liantai', status: 'wait', other: true },
+    { id: 'o2', user: 'u_c2270ae4f1', work: '栗子饮食日记', type: '可交互原型', tpl: '界面流程 · v1', form: '单文件网页', desc: '营养管理 App 高保真原型', shots: ['#f4a259,#e76f51', '#f6bd60,#f28482', '#e76f51,#f4a259'], video: 'liantai', status: 'bad', other: true }
+  ]
+  let current = null
+  function addRow() { ROWS[0].shown = true; renderRows() }
+  function renderRows() {
+    const rows = ROWS.filter((r) => r.other || r.shown)
+    $('d-rows').innerHTML = rows.map((r) => `<tr class="click ${current === r.id ? 'cur' : ''}" data-id="${r.id}"><td>${r.user}</td><td>${r.work}</td><td>${r.type}</td><td>${r.tpl}</td><td>${r.id === 'self' ? '刚刚' : r.status === 'bad' ? '昨天' : '1 小时前'}</td><td><span class="st ${r.status}">${{ wait: '待审核', ok: '已通过', bad: '已驳回' }[r.status]}</span></td></tr>`).join('')
+    $('d-cnt').textContent = rows.filter((r) => r.status === 'wait').length
+    $('d-rows').querySelectorAll('tr').forEach((tr) => tr.addEventListener('click', () => openRow(tr.dataset.id)))
+  }
+  function openRow(id) {
+    current = id; renderRows()
+    const r = ROWS.find((x) => x.id === id)
+    $('detail').style.display = 'grid'
+    const p = $('d-player'); p.innerHTML = ''; mountPlayer(p, r.video)
+    $('d-kv').innerHTML = `<div><span>用户</span>${r.user}（匿名）</div><div><span>作品</span>${r.work}</div><div><span>描述</span>${r.desc}</div><div><span>类型</span>${r.type}</div><div><span>形态</span>${r.form}</div><div><span>模板</span>${r.tpl}</div>`
+    $('d-shots').innerHTML = r.shots.map((g) => `<div class="shot" style="background:linear-gradient(160deg,${g})"></div>`).join('')
+    const done = r.status !== 'wait'
+    $('approve').disabled = $('reject').disabled = done
+    const res = $('dres')
+    if (done) { res.style.display = 'block'; res.textContent = r.status === 'ok' ? '已通过。' : '已驳回。' } else res.style.display = 'none'
+    if (id === 'self') tourEmit('rowOpened')
+  }
+  $('toggleDash').addEventListener('click', () => {
+    const w = $('dashWrap'); const show = !w.classList.contains('show')
+    w.classList.toggle('show', show); $('toggleDash').textContent = show ? '收起审核后台' : '打开审核后台'
+    $('toggleDash').classList.remove('pri')
+    if (show) { renderRows(); if (!tour.on) w.scrollIntoView({ behavior: 'smooth', block: 'start' }); tourEmit('dashOpened') }
+  })
+
+  $('approve').addEventListener('click', () => {
+    const r = ROWS.find((x) => x.id === current); if (!r || r.status !== 'wait') return
+    r.status = 'ok'; openRow(r.id)
+    if (r.other) { $('dres').textContent = '已通过。（这位用户不是上面 Cola 窗口里的人，原型里只更新状态。）'; return }
+    $('dres').textContent = '已通过。用户空闲时，Cola 会在主聊天里发出视频，心迹同步出现卡片。这个账号以后不再生成。'
+    S.approved = true; S.scanned = false; setState(); guide(2)
+    setTimeout(deliver, 1200); tourEmit('approved')
+  })
+  $('reject').addEventListener('click', () => {
+    const r = ROWS.find((x) => x.id === current); if (!r || r.status !== 'wait') return
+    r.status = 'bad'; openRow(r.id)
+    if (r.other) return
+    S.scanned = false; S.rejectedLeft -= 1; setState()
+    $('dres').textContent = `已驳回。这个作品不再出视频。该账号还剩 ${S.rejectedLeft} 次机会，下次每日扫描会换别的作品。用户那边什么都看不到。`
+    $('scan').disabled = S.rejectedLeft <= 0; $('scan').classList.add('pri')
+    $('hint').innerHTML = '驳回后用户什么都不会收到。可以点 <b>重新开始</b>，这次选择通过。'
+    tourEmit('rejected')
+  })
+
+  // ================= 推送 =================
+  function deliver() {
+    const msg = '你一直在打磨的「破浪手账」我挺喜欢的，顺手给它剪了一段 10 秒的介绍片，你看看？<br>想换个风格、改改文案，直接跟我说就行。'
+    if (S.page === 'chat') {
+      colaSay(msg, 'ocean', 1400).then(() => { guide(3); showDefaultSugs(); tourEmit('delivered') })
+    } else {
+      const d = document.createElement('div'); d.className = 'm c'
+      d.innerHTML = `<div class="ava">C</div><div class="body">${msg}${playerBlock('ocean')}</div>`
+      col.appendChild(d); mountAll(d)
+      $('b-chat').classList.add('show'); $('notif').classList.add('show')
+      guide(3); showDefaultSugs(); tourEmit('delivered')
+    }
+    // 心迹卡片
+    const card = document.createElement('div'); card.className = 'fcard enter'; card.dataset.k = 'rec'
+    card.innerHTML = `<span class="unread"></span><div class="tagline">#小 Co 为你挑的</div><h5>「破浪手账」的介绍视频</h5><p>Cola 为你的作品做的一段 10 秒介绍片，可以直接下载分享。</p>${playerBlock('ocean')}<div class="row"><span>视频 · 刚刚</span><button class="chatbtn" data-quote="「破浪手账」的介绍视频">和 Cola 聊聊</button></div>`
+    $('fgrid').prepend(card); mountAll(card)
+    card.addEventListener('played', () => { card.querySelector('.unread')?.remove(); updateUnread() })
+    bindChatBtns(card)
+    $('b-soul').classList.add('show'); updateUnread()
+  }
+  function updateUnread() { const n = document.querySelectorAll('.fcard .unread').length; $('soul-unread').textContent = n ? `${n} 条未读` : '' }
+
+  function bindChatBtns(root) {
+    root.querySelectorAll('.chatbtn').forEach((b) => b.addEventListener('click', () => {
+      b.closest('.fcard').querySelector('.unread')?.remove(); updateUnread()
+      $('qtext').textContent = b.dataset.quote; $('qchip').classList.add('show')
+      const sugs = b.dataset.quote.includes('介绍视频') ? ['能再短一点吗？', '把配色改成深蓝', '这个视频是怎么来的？'] : ['怎么放进我的游戏里？', '有没有更简单的练法？']
+      renderSugs(sugs)
+      go('chat'); input.focus()
+    }))
+  }
+  bindChatBtns(document)
+
+  // 心迹筛选
+  const FDESC = { all: '小 Co 的推荐和悄悄话，都在这里。', rec: '小 Co 为你挑选的文章、视频和其他内容。', imp: '聊过之后，小 Co 想对你说的话。', like: '收藏的内容，方便回来再看。' }
+  document.querySelectorAll('.filter').forEach((f) => f.addEventListener('click', () => {
+    document.querySelectorAll('.filter').forEach((x) => x.classList.toggle('sel', x === f))
+    $('fdesc').textContent = FDESC[f.dataset.f]
+    document.querySelectorAll('#fgrid .fcard').forEach((c) => { c.style.display = (f.dataset.f === 'all' || c.dataset.k === f.dataset.f) ? '' : 'none' })
+  }))
+
+
+  // ================= 建议回复 =================
+  const DEFAULT_SUGS = ['把配色改成深蓝', '能再短一点吗？', '这个视频是怎么来的？', '你们上传我的作品了吗？', '给练习台也做一个', '别再给我做视频了']
+  const used = new Set()
+  function renderSugs(list) {
+    $('sugs').innerHTML = list.length ? '<span class="demo-tag" title="应用里没有这排按钮，只是为了提示可以说什么">仅原型演示</span>' + list.map((s) => `<button class="sug">${s}</button>`).join('') : ''
+    $('sugs').querySelectorAll('.sug').forEach((b) => b.addEventListener('click', () => submit(b.textContent)))
+  }
+  function showDefaultSugs() { renderSugs(DEFAULT_SUGS.filter((s) => !used.has(s))) }
+
+  // ================= 新手引导 =================
+  const q = (sel) => document.querySelector(sel)
+  const ROLE = { sys: '系统 · 用户电脑上', ops: '你现在是：运营', user: '你现在是：用户' }
+  const STEPS = [
+    { role: 'sys', target: () => $('scanlog').style.display === 'block' ? q('.console') : $('scan'), wait: 'scanned',
+      title: '今晚 0 点，Cola 在用户电脑上自动扫一遍',
+      body: '点高亮的按钮来模拟。找作品、判断值不值得做、做成视频，全在用户电脑上完成，<b>用户这时什么都看不到</b>。' },
+    { role: 'ops', target: () => $('toggleDash'), wait: 'dashOpened', skip: () => $('dashWrap').classList.contains('show'),
+      title: '视频做好了，交给运营审核',
+      body: '视频已经上传到后台。现在<b>切换角色：你是运营</b>。点「打开审核后台」。' },
+    { role: 'ops', target: () => q('#d-rows tr[data-id="self"]'), wait: 'rowOpened', skip: () => current === 'self',
+      title: '第一行就是刚才那位用户的作品',
+      body: '另外两行是其他用户的。后台只显示匿名编号，看不到用户是谁。<b>点这一行</b>打开详情。' },
+    { role: 'ops', target: () => $('detail').offsetHeight > innerHeight * .6 ? q('.dact') : $('detail'), wait: 'approved',
+      title: '看一遍视频，然后点「通过」',
+      body: '左边是成片，可以播放、全屏、下载；右边是作品信息和原作品截图，用来对照有没有介绍错。<b>这次先点通过</b>，驳回等引导结束再试。' },
+    { role: 'user', target: () => q('.stage .win'), wait: 'delivered', scroll: 'start',
+      title: '切回用户视角：Cola 主动来找用户了',
+      body: '审核通过后，等用户空闲，Cola 会在主聊天里主动发一条消息。稍等几秒…' },
+    { role: 'user', target: () => [...$('col').querySelectorAll('.m.c')].pop(), next: '下一步',
+      enter: () => { if (S.page !== 'chat') go('chat') },
+      title: '这就是用户收到的消息',
+      body: '这段话是 Cola 看了视频后自己写的，语气像朋友顺手分享，不像系统通知。这一轮不扣用户的钱。<b>点视频可以播放。</b>' },
+    { role: 'user', target: () => q('#p-chat .composer-wrap'), wait: 'replied',
+      title: '用户可以接着跟 Cola 聊',
+      body: '点上面任意一个建议，或者自己输入（这排建议<b>只在原型里有</b>，应用里不做）。比如问「你们上传我的作品了吗」，Cola 会如实说明经过了审核。' },
+    { role: 'user', target: () => q('.nav[data-p="soul"]'), wait: 'soulOpened',
+      title: '视频也会放进「心迹」',
+      body: '心迹右边有红点。<b>点左侧的「心迹」</b>。' },
+    { role: 'user', target: () => q('#fgrid .fcard'), next: '下一步',
+      title: '心迹里的视频卡片',
+      body: '可以播放、下载。点「和 Cola 聊聊」会带着这张卡片回到主聊天。' },
+    { center: true, next: '自己随便点点', alt: ['往下看流程图', () => $('flowchart').scrollIntoView({ behavior: 'smooth' })],
+      title: '引导结束',
+      body: '还可以试试：<br>· 在聊天里说 <b>别再给我做视频了</b>，看功能怎么关掉；<br>· 点 <b>重新开始</b>，在后台选 <b>驳回</b>，看驳回后会怎样；<br>· 往下看 <b>流程图</b> 和 <b>需要运营一起定的事</b>。' }
+  ]
+  const WELCOME = { center: true, next: '开始引导', alt: ['我自己看', () => {}], noCount: true,
+    title: '1 分钟看懂这个原型',
+    body: '要演示的功能：用户用 Cola 做了网页作品后，Cola 夜里自动给作品做一段介绍视频，运营审核通过后，在 App 里推给用户。<br>引导会一步步高亮该点的地方，你会轮流扮演下面三个环节：',
+    extra: `<div class="roles3">
+      <div class="r sys"><b>① 用户电脑上</b>夜里自动找作品、做视频，用户无感知</div><div class="arr">→</div>
+      <div class="r ops"><b>② 审核后台</b>运营看视频，点通过或驳回</div><div class="arr">→</div>
+      <div class="r user"><b>③ 用户的 Cola</b>收到 Cola 的消息，接着聊</div></div>` }
+  const REJECTED = { center: true, next: '重新开始引导', onNext: () => restartTour(), alt: ['先不看了', () => {}], noCount: true,
+    title: '你选了驳回',
+    body: '驳回后，用户那边<b>什么都收不到</b>。这个账号剩余机会减一，下次每日扫描会换别的作品再试。<br>引导需要走「通过」这条路才能继续。' }
+
+  const tour = { on: false, i: 0, step: null }
+  const pop = $('tourPop'), hole = $('tourHole'), dim = $('tourDim')
+  function tourEmit(name) {
+    if (!tour.on || !tour.step) return
+    if (name === 'rejected' && tour.step !== REJECTED) return show(REJECTED)
+    if (tour.step.wait === name) advance()
+  }
+  function advance() {
+    if (tour.step === WELCOME) tour.i = 0; else tour.i++
+    while (tour.i < STEPS.length && STEPS[tour.i].skip && STEPS[tour.i].skip()) tour.i++
+    if (tour.i >= STEPS.length) return endTour()
+    show(STEPS[tour.i])
+  }
+  function show(step) {
+    tour.on = true; tour.step = step
+    step.enter && step.enter()
+    const n = STEPS.indexOf(step)
+    pop.className = 'tour-pop' + (step.center ? ' center' : '')
+    pop.innerHTML = `<div class="tour-head">${step.role ? `<span class="role ${step.role}">${ROLE[step.role]}</span>` : ''}${n >= 0 && !step.center ? `<span class="n">${n + 1} / ${STEPS.length - 1}</span>` : ''}</div>
+      <h4>${step.title}</h4><p>${step.body}</p>${step.extra || ''}
+      <div class="tour-foot">${step.wait ? '<span class="wait">完成高亮处的操作后自动继续</span>' : ''}
+        ${step.alt ? `<button class="skip" data-a="alt">${step.alt[0]}</button>` : step.center ? '' : '<button class="skip" data-a="end">跳过引导</button>'}
+        ${step.next ? `<button class="btn pri" data-a="next">${step.next}</button>` : ''}</div>`
+    pop.style.display = 'block'
+    pop.querySelector('[data-a="next"]')?.addEventListener('click', () => step.onNext ? step.onNext() : step === STEPS[STEPS.length - 1] ? endTour() : advance())
+    pop.querySelector('[data-a="alt"]')?.addEventListener('click', () => { endTour(); step.alt[1]() })
+    pop.querySelector('[data-a="end"]')?.addEventListener('click', endTour)
+    if (!step.center) {
+      // 等目标出现再滚动过去
+      let tries = 0
+      const scrollTo = () => { const el = step.target(); if (el && el.getClientRects().length) el.scrollIntoView({ behavior: 'smooth', block: step.scroll || 'center' }); else if (tries++ < 20) setTimeout(scrollTo, 100) }
+      setTimeout(scrollTo, 60)
+    }
+    if (!tour.raf) tour.raf = requestAnimationFrame(layout)
+  }
+  function layout() {
+    tour.raf = null
+    if (!tour.on) return
+    const step = tour.step
+    const el = step.center ? null : step.target()
+    const r = el && el.getClientRects().length ? el.getBoundingClientRect() : null
+    if (!r) {
+      hole.style.display = 'none'; dim.style.display = 'block'
+      if (!step.center) { pop.classList.add('center') }
+    } else {
+      pop.classList.remove('center')
+      dim.style.display = 'none'; hole.style.display = 'block'
+      const pad = 6, vw = innerWidth, vh = innerHeight
+      Object.assign(hole.style, { left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px' })
+      const w = pop.offsetWidth, h = pop.offsetHeight, gap = 14
+      let top
+      if (vh - r.bottom >= h + gap + pad) top = r.bottom + pad + gap
+      else if (r.top >= h + gap + pad) top = r.top - pad - gap - h
+      else top = Math.min(vh - h - 16, Math.max(16, r.bottom - h - 16))
+      const left = Math.min(vw - w - 16, Math.max(16, r.left + r.width / 2 - w / 2))
+      pop.style.left = left + 'px'; pop.style.top = top + 'px'
+    }
+    tour.raf = requestAnimationFrame(layout)
+  }
+  function endTour() {
+    tour.on = false; tour.step = null
+    pop.style.display = hole.style.display = dim.style.display = 'none'
+  }
+  function restartTour() { try { sessionStorage.setItem('pv-tour', 'run') } catch {} location.reload() }
+  $('tourBtn').addEventListener('click', () => {
+    const pristine = !S.scanned && !S.approved && S.rejectedLeft === 3
+    if (pristine) show(WELCOME); else restartTour()
+  })
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour.on && !$('lightbox').classList.contains('show')) endTour() })
+  {
+    let mode = null
+    try { mode = sessionStorage.getItem('pv-tour'); sessionStorage.removeItem('pv-tour') } catch {}
+    if (mode === 'run') { tour.step = WELCOME; advance() } else if (mode !== 'skip') show(WELCOME)
+  }
+
+  $('reset').addEventListener('click', () => { try { sessionStorage.setItem('pv-tour', tour.on ? 'run' : 'skip') } catch {} location.reload() })
+  setState(); scrollThread()
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches
+  const c = dark
+    ? { fg:'#ececec', auto:'#1f2a3d', autoB:'#6f93d0', ops:'#3a2f1a', opsB:'#d49a30', reach:'#1c3326', reachB:'#5aa877', stop:'#2a2a2a', stopB:'#6e6a64', pend:'#ff7a75' }
+    : { fg:'#1f1f1f', auto:'#eef3fb', autoB:'#7a9cd6', ops:'#fff4e0', opsB:'#e0a030', reach:'#eaf6ee', reachB:'#5aa877', stop:'#f3f1ee', stopB:'#b9b4ac', pend:'#d9534f' }
+  const graph = `flowchart TD
+  start(["每天 0 点 / 10 点<br/>Cola 自动运行一次"]):::auto
+  gate{"这个账号还需要做吗？<br/>（总开关开着、没成功过、<br/>不在审核中、用户没关闭）"}:::auto
+  ctrl{"实验分组"}:::auto
+  ctrlEnd["对照组 20%<br/>只记录「本来会收到视频」<br/>不做视频"]:::stop
+  scan["扫描昨天的对话<br/>找用 Cola 做的网页作品<br/>（第一次回看 14 天）"]:::auto
+  judge{"AI 判断这个作品<br/>· 完成度够介绍吗<br/>· 有没有真实客户 / 个人数据<br/>· 之前做过视频吗"}:::auto
+  wait["这次先不做<br/>作品之后被修改时再判断"]:::stop
+  make["本地制作视频<br/>选模板 → 写动画 → 自检 → 录成视频"]:::auto
+  fail["制作失败<br/>同一作品最多试 2 次<br/>不占用审核机会"]:::stop
+  upload["上传到后台"]:::auto
+  review{"运营审核<br/>只看视频、作品类型、截图<br/>用户匿名"}:::ops
+  reject["驳回：这个作品作废<br/>换别的作品再试<br/>每个账号最多 3 次"]:::stop
+  chat["Cola 在主对话里主动发消息<br/>附上视频，用自己的语气介绍<br/>（用户正在聊天就等这一轮结束）"]:::reach
+  card["心迹里同时出现视频卡片<br/>（带红点）"]:::reach
+  notify["要不要再加一条系统通知？"]:::pend
+  next["用户：播放 / 下载 / 直接回复 Cola<br/>→ 接着改这个视频<br/>→ 给别的作品也做一个"]:::reach
+  done(["这个账号完成，以后不再做"]):::stop
+
+  start --> gate
+  gate -- 不需要 --> stopA(["结束"]):::stop
+  gate -- 需要 --> ctrl
+  ctrl -- 对照组 --> ctrlEnd
+  ctrl -- 实验组 80% --> scan
+  scan -- 没有作品 --> stopB(["结束，明天再看"]):::stop
+  scan -- 有作品 --> judge
+  judge -- 不合格 --> wait
+  judge -- 合格，挑 1 个 --> make
+  make -- 失败 --> fail
+  make -- 成功 --> upload
+  upload --> review
+  review -- 驳回 --> reject
+  review -- 通过 --> chat
+  review -- 通过 --> card
+  chat -.- notify
+  chat --> next
+  card --> next
+  next --> done
+  classDef auto fill:${c.auto},stroke:${c.autoB},color:${c.fg},stroke-width:1.5px
+  classDef ops fill:${c.ops},stroke:${c.opsB},color:${c.fg},stroke-width:2px
+  classDef reach fill:${c.reach},stroke:${c.reachB},color:${c.fg},stroke-width:1.5px
+  classDef stop fill:${c.stop},stroke:${c.stopB},color:${c.fg},stroke-width:1.5px
+  classDef pend fill:none,stroke:${c.pend},color:${c.fg},stroke-width:1.5px,stroke-dasharray:5 4
+`
+  document.getElementById('g').textContent = graph
+  mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'neutral', flowchart: { curve: 'basis', htmlLabels: true } })
+  mermaid.run({ querySelector: '#g' })
+</script>
+</body>
+</html>
