@@ -187,11 +187,7 @@
   .pitem small { color: var(--app-muted); font-size: 12px; }
   .placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--app-muted); font-size: 13.5px; text-align: center; padding: 24px; }
 
-  /* 通知 / toast */
-  .notif { position: absolute; top: 52px; right: 16px; z-index: 20; width: 300px; background: var(--app-surface); color: var(--app-text);
-    border: 1.5px dashed var(--pend); border-radius: 12px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.15); font-size: 13px; display: none; cursor: pointer; }
-  .notif.show { display: block; animation: rise .3s ease-out; }
-  .notif small { display: block; color: var(--pend); font-size: 11px; margin-top: 4px; }
+  /* toast */
   .toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 30; background: #111; color: #fff; font-size: 13px; padding: 7px 14px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity .2s; white-space: nowrap; }
   .toast.show { opacity: .92; }
 
@@ -409,10 +405,6 @@
         <section class="page" id="p-menu"><div class="phead">菜单</div><div class="placeholder">一期不在设置里加开关。<br>用户在聊天里说「别再给我做视频了」，Cola 会帮用户关掉。</div></section>
       </div>
     </div>
-    <div class="notif" id="notif">
-      <b>Cola</b><br>给你的「破浪手账」做了一段介绍视频，来看看？
-      <small>待运营确认：要不要发这条系统通知</small>
-    </div>
     <div class="toast" id="toast"></div>
   </div>
 
@@ -477,7 +469,6 @@
     <div class="box pend">
       <h3>待确认</h3>
       <ol>
-        <li><b>系统通知</b>：主对话消息和心迹红点之外，要不要再加一条系统通知（用户不在电脑前时也能看到）。原型右上角红色虚线框就是它。</li>
         <li><b>卡片文案</b>：心迹里视频卡片的标题和说明。对话里的消息由 Cola 自己写，运营可以调整给它的写作要求。</li>
         <li><b>审核</b>：谁来审、多久内审完。</li>
       </ol>
@@ -500,7 +491,7 @@
       <tr><td>实验</td><td>按账号分组：80% 收视频，20% 不收作对照。比例可在服务端调整。</td></tr>
       <tr><td>费用</td><td>自动做视频不扣用户积分。用户之后在聊天里让 Cola 改视频，按正常规则计费。</td></tr>
       <tr><td>隐私</td><td>页面里有真实客户 / 个人数据的作品直接跳过；审核页用户匿名；后台视频审核结束 30 天后自动删除。</td></tr>
-      <tr><td>触达</td><td>只在 App 内：主对话消息 + 心迹卡片。不发邮件、不发短信。</td></tr>
+      <tr><td>触达</td><td>只在 App 内：主对话消息 + 心迹卡片。和推荐一样不弹系统通知，不发邮件、不发短信。</td></tr>
       <tr><td>关闭</td><td>用户在聊天里说不想要，Cola 会帮用户关掉。服务端有总开关，随时可以整体下线，已推送的视频保留。</td></tr>
       <tr><td>范围</td><td>国际版和中国版都上，只覆盖桌面端。</td></tr>
     </table>
@@ -603,13 +594,12 @@
     document.querySelectorAll('.nav').forEach((n) => n.classList.toggle('sel', n.dataset.p === p))
     document.querySelectorAll('.chatlink').forEach((n) => n.classList.toggle('sel', n.dataset.p === p))
     document.querySelectorAll('.page').forEach((s) => s.classList.toggle('show', s.id === 'p-' + p))
-    if (p === 'chat') { $('b-chat').classList.remove('show'); $('notif').classList.remove('show'); scrollThread() }
+    if (p === 'chat') { $('b-chat').classList.remove('show'); scrollThread() }
     if (p === 'soul') { $('b-soul').classList.remove('show'); if (S.approved) guide(Math.max(curGuide, 4)); tourEmit('soulOpened') }
   }
   let curGuide = 0
   const _guide = guide; guide = (n) => { curGuide = n; _guide(n) }
   document.querySelectorAll('[data-p]').forEach((n) => n.addEventListener('click', () => go(n.dataset.p)))
-  $('notif').addEventListener('click', () => go('chat'))
 
   // ================= 聊天 =================
   const col = $('col'), thread = $('thread')
@@ -775,7 +765,7 @@
       const d = document.createElement('div'); d.className = 'm c'
       d.innerHTML = `<div class="ava">C</div><div class="body">${msg}${playerBlock('ocean')}</div>`
       col.appendChild(d); mountAll(d)
-      $('b-chat').classList.add('show'); $('notif').classList.add('show')
+      $('b-chat').classList.add('show')
       guide(3); showDefaultSugs(); tourEmit('delivered')
     }
     // 心迹卡片
@@ -962,9 +952,8 @@
   upload["上传到后台"]:::auto
   review{"运营审核<br/>只看视频、作品类型、截图<br/>用户匿名"}:::ops
   reject["驳回：这个作品作废<br/>换别的作品再试<br/>每个账号最多 3 次"]:::stop
-  chat["Cola 在主对话里主动发消息<br/>附上视频，用自己的语气介绍<br/>（用户正在聊天就等这一轮结束）"]:::reach
+  chat["Cola 在主对话里主动发消息<br/>附上视频，用自己的语气介绍<br/>（用户正在聊天就等这一轮结束）<br/>和推荐一样不弹系统通知"]:::reach
   card["心迹里同时出现视频卡片<br/>（带红点）"]:::reach
-  notify["要不要再加一条系统通知？"]:::pend
   next["用户：播放 / 下载 / 直接回复 Cola<br/>→ 接着改这个视频<br/>→ 给别的作品也做一个"]:::reach
   done(["这个账号完成，以后不再做"]):::stop
 
@@ -983,7 +972,6 @@
   review -- 驳回 --> reject
   review -- 通过 --> chat
   review -- 通过 --> card
-  chat -.- notify
   chat --> next
   card --> next
   next --> done
